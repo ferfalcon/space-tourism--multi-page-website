@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This document translates the inspected source design artifacts and `DESIGN.md` into a technical product specification for the Space Tourism multi-page website. The wording is intentionally tool-agnostic so the visual source can later move between design files, screenshots, exported mockups, or other approved reference formats.
+This document translates the reviewed source design artifacts and `DESIGN.md` into a technical product specification for the Space Tourism multi-page website. The wording is intentionally tool-agnostic so the visual source can later move between design files, screenshots, exported mockups, or other approved reference formats.
 
 The final production target is a WordPress block theme. Astro is an intermediate implementation layer for UI precision, responsive validation, accessibility review, token refinement, and data-model clarification before the WordPress translation.
 
@@ -59,7 +59,7 @@ The following are explicitly out of scope for this specification:
 - Animations beyond simple interaction states.
 - User authentication, booking, payments, or real space travel inventory.
 - Search functionality.
-- Footer implementation, because the inspected source-design footer frame is empty.
+- Footer implementation, because the reviewed source-design footer reference is empty.
 - Client-side tab behavior unless route-based navigation is rejected.
 - Tailwind or any utility-first CSS system unless explicitly requested later.
 
@@ -75,10 +75,12 @@ The specification relies on these assumptions:
 4. The production target will be a WordPress block theme.
 5. The repeated page families should be data-driven rather than manually duplicated.
 6. Destination, Crew, and Technology item switching should be implemented as route navigation, not JavaScript-only tabs/carousels.
-7. The mobile menu open state is not present in the inspected reference frames, so only the closed mobile menu state is visually specified.
+7. The mobile menu open state is not present in the reviewed reference mockups, so only the closed mobile menu state is visually specified.
 8. The footer should be omitted until a real footer design is provided.
-9. The tool-generated React/Tailwind-like code is measurement reference only and must not define the production architecture.
+9. Generated design-export code is measurement reference only and must not define the production architecture.
 10. Images shown in the source design artifacts represent the required art direction and crop behavior, but final asset filenames and formats may differ.
+11. Mobile navigation must be functional even though the open menu visual is not specified. A minimal accessible inferred menu is acceptable until an approved open-state reference is provided.
+12. Tablet-specific image assets are required when the tablet crop is visually distinct; otherwise a documented mobile-or-desktop fallback may be used and verified.
 
 ---
 
@@ -87,7 +89,7 @@ The specification relies on these assumptions:
 These questions must be resolved before final implementation decisions:
 
 1. Should tablet navigation show section numbers for all items, hide them for all items, or follow the inconsistent Home tablet frame where active `HOME` appears without `00`?
-2. What should the opened mobile navigation look like? The inspected frames only show the hamburger closed state.
+2. What should the opened mobile navigation look like? The reviewed reference mockups only show the hamburger closed state.
 3. Are Destination, Crew, and Technology pages expected to be separate routes, or should they behave as in-page interactive panels?
 4. Should the Home `EXPLORE` CTA link to `/destination/moon`?
 5. Are all source images available as local project assets, or must they be exported from the current source design artifacts?
@@ -96,6 +98,9 @@ These questions must be resolved before final implementation decisions:
 8. Should the site include any footer content not visible in the source design artifacts?
 9. Are hover states beyond the active/default source-design states required from the original challenge/design system?
 10. Is motion allowed for the Explore CTA halo and menu transitions, or should all motion be minimal/static?
+11. Should the inferred mobile menu open state be a right-side overlay, full-screen panel, or another pattern?
+12. What visual tolerance is acceptable during QA: exact pixel match at the reference widths, or a small documented tolerance for browser/font rendering differences?
+13. Are tablet-specific background and content image assets available for every page family, or should tablet use documented fallbacks?
 
 ---
 
@@ -306,7 +311,8 @@ Validation rules:
 
 - Decorative backgrounds must not require `alt`.
 - Content images must provide meaningful `alt` text.
-- If `tablet` is missing, fallback behavior must be explicitly defined.
+- If `tablet` is missing, fallback behavior must be explicitly defined and visually checked at the tablet reference width.
+- If a tablet crop differs meaningfully from both mobile and desktop, `tablet` becomes required for visual parity.
 
 ### 10.3 Page shell contract
 
@@ -553,13 +559,19 @@ Mobile menu trigger:
 
 - default: visible hamburger
 - focus-visible: visible focus ring/outline
-- if open state is implemented: trigger toggles `aria-expanded`
+- must open or reveal a functional mobile navigation experience
+- trigger toggles `aria-expanded` when controlling a menu
+- Escape closes the menu
+- focus returns to the trigger after the menu closes
+
+Assumption: because mobile hides the desktop/tablet nav links, the hamburger cannot be decorative-only.
 
 ### 13.8 Edge cases
 
 - If tablet nav overflows, spacing may compress but labels must remain readable.
 - If the Home tablet number inconsistency remains unresolved, implement consistent nav behavior and mark the source-design inconsistency in review notes.
 - If backdrop blur is unsupported, nav glass must fall back to a translucent background.
+- If the mobile open-menu visual is still unapproved at implementation time, use a minimal accessible inferred menu and flag it for visual review.
 
 ---
 
@@ -839,7 +851,7 @@ Validation rules:
 
 ### 16.4 Content requirements
 
-Inspected Moon content:
+Reviewed Moon reference content:
 
 | Field | Value |
 | --- | --- |
@@ -948,7 +960,7 @@ Destination controls:
 
 - All four destinations are accessible from destination navigation.
 - Active destination state is visually and semantically clear.
-- Destination layout matches the source design artifacts at mobile, tablet, and desktop reference widths.
+- Destination layout matches the reviewed reference mockups at mobile, tablet, and desktop reference widths.
 - Planet image size and position follow the visual intent.
 - Stats render as two columns on desktop and stacked on mobile.
 
@@ -1037,11 +1049,11 @@ Validation rules:
 - `members` must contain the four visible pagination items unless design changes.
 - `activeSlug` must match one member.
 - `role` and `name` should render uppercase visually.
-- `bio` must be clean text and must not include tool-generated empty paragraphs.
+- `bio` must be clean text and must not include generated design-export empty paragraphs.
 
 ### 17.4 Content requirements
 
-Inspected Douglas Hurley content:
+Reviewed Douglas Hurley reference content:
 
 | Field | Value |
 | --- | --- |
@@ -1064,6 +1076,17 @@ Desktop:
 - role/name/bio align left
 - portrait aligns to the lower portion of the content area
 - dot pagination sits near the lower part of the left column
+
+Tablet:
+
+- target frame: `768 × 1024`
+- content should remain centered rather than switching too early to the desktop two-column layout
+- role/name/bio should appear before pagination and portrait unless an approved tablet reference says otherwise
+- dot pagination stays close to the text block
+- portrait remains below or visually subordinate to the text block
+- vertical spacing must prevent the bio, dots, and portrait from colliding on shorter tablet-height viewports
+
+Assumption: the tablet Crew experience follows the small-screen reading order because the reviewed smaller-screen references prioritize text before portrait.
 
 Mobile:
 
@@ -1118,15 +1141,15 @@ Crew dot controls:
 - Long bios must not overlap the portrait.
 - Portraits with different aspect ratios must align consistently with the design.
 - Missing portrait must not break layout.
-- The mobile order must follow the inspected source-design order unless intentionally changed later.
+- The mobile order must follow the reviewed source-design order unless intentionally changed later.
 
 ### 17.10 Acceptance criteria
 
 - All four crew members are reachable.
 - Active crew member state is visually and semantically clear.
 - Dot controls have accessible labels.
-- Mobile order matches the inspected design.
-- tool-generated empty paragraph artifacts are not present.
+- Mobile order matches the reviewed reference mockups.
+- generated design-export empty paragraph artifacts are not present.
 
 ---
 
@@ -1166,8 +1189,8 @@ TechnologyItem {
   name: string
   description: string
   images: {
-    portrait: string
-    landscape: string
+    portrait?: string
+    landscape?: string
     alt: string
   }
 }
@@ -1190,9 +1213,8 @@ Required fields:
 - `slug`
 - `name`
 - `description`
-- `images.portrait`
-- `images.landscape`
 - `images.alt`
+- at least one of `images.portrait` or `images.landscape`
 - `items`
 - `activeSlug`
 - `eyebrow`
@@ -1210,11 +1232,12 @@ Validation rules:
 - `items` must contain exactly the three visible technology controls unless design changes.
 - `activeSlug` must match one item.
 - `name` should render uppercase visually.
-- `portrait` and `landscape` are both required because the responsive crop changes significantly.
+- `portrait` and `landscape` are both expected for production visual parity because the responsive crop changes significantly.
+- If one orientation is missing, the fallback must be documented and flagged as a visual QA risk.
 
 ### 18.4 Content requirements
 
-Inspected Launch Vehicle content:
+Reviewed Launch Vehicle reference content:
 
 | Field | Value |
 | --- | --- |
@@ -1239,6 +1262,17 @@ Desktop:
 - image is positioned on the right
 - desktop image uses portrait crop
 - image frame height: about `600px`
+
+Tablet:
+
+- target frame: `768 × 1024`
+- landscape image appears above pagination and text
+- numbered pagination is horizontal
+- text content is centered
+- description width remains constrained for readability
+- image crop must be validated separately from desktop
+
+Assumption: tablet follows the mobile image-first flow rather than the desktop right-side portrait layout unless a future reference confirms otherwise.
 
 Mobile:
 
@@ -1412,6 +1446,17 @@ Minimum expected behavior:
 - destination tab labels must be comfortably selectable on mobile
 - technology circles already meet size requirements visually
 
+### 20.6 Contrast and user preference modes
+
+The implementation must remain usable when:
+
+- browser zoom or text zoom is increased
+- reduced motion is enabled
+- forced-colors/high-contrast modes are active
+- backdrop blur is unavailable
+
+State must not rely only on subtle opacity changes. Use semantic state plus visible focus/active indicators.
+
 ---
 
 ## 21. Edge case specification
@@ -1446,6 +1491,8 @@ The UI must handle:
 - high text zoom / browser zoom
 - reduced motion users
 - slow image loading
+- safe-area insets on mobile devices with notches or browser UI overlays
+- forced-colors/high-contrast user settings
 
 ### 21.3 Data edge cases
 
@@ -1512,17 +1559,19 @@ Open question: the preferred WordPress content model has not been decided.
 The project meets this specification when:
 
 - all required pages/routes exist or have defined route behavior
-- all page families match the source-design intent at mobile, tablet, and desktop sizes
+- all page families match the reviewed reference mockups at the 375px, 768px, and 1440px visual targets
+- layouts remain usable at intermediate widths without horizontal scrolling
 - global colors, spacing, and typography match `DESIGN.md`
-- shared navigation appears consistently across pages
+- shared navigation appears consistently across pages and remains functional on mobile
 - active navigation state is visually and semantically clear
-- backgrounds use appropriate responsive crops
-- no horizontal scrolling occurs at supported viewport widths
+- backgrounds and content images use appropriate responsive crops or documented fallbacks
 - text remains real selectable text
 - image alt behavior is correct for decorative vs content imagery
 - all interactive elements are keyboard accessible
-- all focus states are visible
+- all focus states are visible against dark backgrounds
+- small visual controls expose larger practical touch/focus targets when needed
 - reduced motion preferences are respected
+- high-contrast or forced-colors modes do not make controls unusable
 - no footer is rendered unless a footer design is provided
 
 ### 23.2 Home acceptance criteria
@@ -1546,7 +1595,7 @@ The project meets this specification when:
 - Active crew member is visually and semantically identified.
 - Dot controls have accessible labels.
 - Role, name, bio, and portrait render for each crew member.
-- Mobile content order follows the source design artifacts: text, pagination, image.
+- Mobile content order follows the reviewed reference mockups: text, pagination, image.
 
 ### 23.5 Technology acceptance criteria
 
@@ -1564,7 +1613,7 @@ The project meets this specification when:
 - Decorative imagery is not announced.
 - Content imagery has useful alt text.
 - Focus indicators are visible against dark backgrounds.
-- The mobile menu trigger is a real button and exposes its state if an open menu is implemented.
+- The mobile menu trigger is a real button and exposes its state when controlling the mobile menu.
 
 ---
 
@@ -1572,7 +1621,7 @@ The project meets this specification when:
 
 ### First review
 
-The specification was checked against the inspected source-design metadata, representative Home/Destination/Crew/Technology frames, and token definitions. The zero-size shared node, empty footer frame, tablet nav inconsistency, and tool-generated markup limitations are reflected as assumptions, open questions, or edge cases.
+The specification was checked against the source design structure, representative Home/Destination/Crew/Technology reference frames, and token definitions. Wrapper-level source artifacts, the empty footer placeholder, tablet nav inconsistency, mobile menu open-state gap, and generated design-export markup limitations are reflected as assumptions, open questions, or edge cases.
 
 ### Second review
 

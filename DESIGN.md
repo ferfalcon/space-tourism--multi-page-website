@@ -2,13 +2,31 @@
 
 ## 1. Purpose
 
-This document translates the inspected source design artifacts into a practical design specification for implementation. The wording is intentionally tool-agnostic: source design artifacts may be design files, screenshots, exported mockups, Penpot files, PDFs, or another approved visual reference.
+This document translates the reviewed source design artifacts into a practical design specification for implementation. The wording is intentionally tool-agnostic: source design artifacts may be design files, screenshots, exported mockups, Penpot files, PDFs, or another approved visual reference.
 
-The goal is not to copy the design tool's generated React/Tailwind-like output. The goal is to preserve the visual design, interaction model, responsive behavior, and accessibility intent while implementing the site in a maintainable Astro + HTML + CSS architecture.
+The goal is not to copy generated markup exported from any design tool. The goal is to preserve the visual design, interaction model, responsive behavior, and accessibility intent while implementing the site in a maintainable Astro + HTML + CSS architecture.
+
 
 ---
 
-## 2. Product and visual direction
+## 2. Assumptions and terminology
+
+Assumptions:
+
+- The source design artifacts are the current visual source of truth.
+- The source design artifacts may change format over time; they may be design files, Penpot files, screenshots, exported mockups, PDFs, or another approved visual reference.
+- Measurements in this document are derived from the reviewed reference mockups and should be used as implementation targets, not as generated-code instructions.
+- When reference mockups do not show a state, the implementation should infer the smallest accessible behavior needed, document the assumption, and request confirmation before adding extra visual complexity.
+
+Terminology:
+
+- **Source design artifacts**: approved visual references used as the visual source of truth.
+- **Reference mockups**: static visual frames or exports used to verify layout, typography, spacing, crops, and responsive behavior.
+- **Mock data**: temporary structured content used in Astro before the final WordPress content model is selected.
+
+---
+
+## 3. Product and visual direction
 
 The website is an immersive editorial-style space tourism experience. It should feel premium, cinematic, calm, and spacious.
 
@@ -27,7 +45,7 @@ The UI should not feel like a dashboard or app interface. It should feel like a 
 
 ---
 
-## 3. Page inventory
+## 4. Page inventory
 
 The current source design artifacts contain the following pages and responsive reference frames.
 
@@ -98,9 +116,9 @@ The technology pages share one template.
 
 ---
 
-## 4. Core design system
+## 5. Core design system
 
-### 4.1 Colors
+### Colors
 
 Use a very small color system. Do not create additional color tokens unless the implementation proves they are needed.
 
@@ -130,7 +148,7 @@ Recommended utility-like aliases:
 }
 ```
 
-### 4.2 Typography
+### Typography
 
 The design uses three typefaces:
 
@@ -251,7 +269,7 @@ Recommended global classes:
 
 Mobile adjustments should be applied per component, not by blindly scaling everything. The Home title, destination title, crew name, technology name, and body copy each have specific mobile values.
 
-### 4.3 Spacing
+### Spacing
 
 Use the spacing tokens found in the source design artifacts.
 
@@ -269,7 +287,7 @@ Use the spacing tokens found in the source design artifacts.
 }
 ```
 
-### 4.4 Layout widths
+### Layout widths
 
 Important fixed/max widths from the design:
 
@@ -286,7 +304,7 @@ Important fixed/max widths from the design:
 
 ---
 
-## 5. Breakpoints and responsive model
+## 6. Breakpoints and responsive model
 
 The reference frames imply three primary breakpoints:
 
@@ -315,13 +333,13 @@ Recommended implementation breakpoints:
 }
 ```
 
-Use fluid CSS where possible, but preserve the design proportions at the three inspected frame widths.
+Use fluid CSS where possible, but preserve the design proportions at the three reviewed reference widths.
 
 Use `min-height: 100svh` for pages instead of fixed viewport heights. The desktop reference target is 1024px high, but the browser must adapt to real viewport height.
 
 ---
 
-## 6. Recommended implementation architecture
+## 7. Recommended implementation architecture
 
 Do not implement every reference frame as a separate component. The source design artifacts contain multiple page states that should become reusable templates.
 
@@ -392,7 +410,7 @@ The destination tabs, crew pagination, and technology pagination should be imple
 
 ---
 
-## 7. Shared page shell
+## 8. Shared page shell
 
 All pages share these requirements:
 
@@ -400,7 +418,7 @@ All pages share these requirements:
 - full-bleed background image
 - fixed visual brand/navigation region at the top
 - main content above background imagery
-- no visible footer in the inspected designs
+- no visible footer in the reviewed reference mockups
 - page content should sit within responsive containers
 - decorative background images should not be announced by screen readers
 
@@ -425,9 +443,9 @@ Example shell semantics:
 
 ---
 
-## 8. Navigation design
+## 9. Navigation design
 
-### 8.1 Shared behavior
+### Shared behavior
 
 Navigation contains four main sections:
 
@@ -442,7 +460,7 @@ Use `<nav aria-label="Primary">`.
 
 Use real links for navigation items. The active link should use `aria-current="page"` or `aria-current="location"` depending on route strategy.
 
-### 8.2 Desktop navigation
+### Desktop navigation
 
 Desktop measurements:
 
@@ -466,7 +484,7 @@ Expected visual behavior:
 - nav glass occupies the right side
 - active section is indicated by a white underline at the bottom of the 96px nav item height
 
-### 8.3 Tablet navigation
+### Tablet navigation
 
 Tablet measurements:
 
@@ -480,9 +498,9 @@ Tablet measurements:
 
 Design inconsistency to resolve:
 
-In the inspected Home tablet frame, the active `HOME` link appears without the `00` prefix while the other links still include their numbers. Desktop includes `00 HOME`. Treat this as a design inconsistency unless confirmed otherwise. Recommended implementation: keep the index behavior consistent for all tablet links, or intentionally hide all indexes on tablet if the layout becomes crowded.
+In one reviewed Home tablet reference, the active `HOME` link appears without the `00` prefix while the other links still include their numbers. Desktop includes `00 HOME`. Treat this as a design inconsistency unless confirmed otherwise. Recommended implementation: keep the index behavior consistent for all tablet links, or intentionally hide all indexes on tablet if the layout becomes crowded.
 
-### 8.4 Mobile navigation
+### Mobile navigation
 
 Mobile measurements:
 
@@ -507,21 +525,24 @@ The hamburger must be a real button:
 </button>
 ```
 
-If implementing an opened mobile menu, include:
+A functional mobile navigation experience is required. The closed hamburger state is specified in the reference mockups; the opened panel is not fully specified. Until an approved open-state reference exists, use a conservative accessible panel that matches the dark/glass visual language and document it as an inferred state.
+
+The opened mobile menu must include:
 
 - Escape key closes menu
-- focus moves into menu when opened
-- focus returns to trigger when closed
+- focus moves into the menu when opened
+- focus returns to the trigger when closed
 - active route is visible and announced
-- background scroll lock if menu overlays the page
+- background scroll lock if the menu overlays the page
+- a clear close affordance, either by reusing the trigger as a toggle or by providing a labelled close button
 
-The inspected reference frames show only the closed hamburger state, not the open mobile menu panel.
+Open question: should the open menu be a right-side overlay, full-screen panel, or another client-approved pattern?
 
 ---
 
-## 9. Home page design
+## 10. Home page design
 
-### 9.1 Content
+### Content
 
 Home contains:
 
@@ -532,7 +553,7 @@ Home contains:
 
 CTA should link to the first destination route: `/destination/moon`.
 
-### 9.2 Desktop layout
+### Desktop layout
 
 Desktop target: `1440 × 1024`.
 
@@ -561,7 +582,7 @@ CTA measurements:
 - text: Bellefair, `32px`, uppercase, color `--color-blue-900`
 - shape: fully round
 
-### 9.3 Tablet layout
+### Tablet layout
 
 Tablet target: `768 × 1024`.
 
@@ -573,7 +594,7 @@ Tablet target: `768 × 1024`.
 - main content horizontal padding: `40px`
 - main vertical padding: `128px`
 
-### 9.4 Mobile layout
+### Mobile layout
 
 Mobile target: `375 × 812`.
 
@@ -587,9 +608,9 @@ Mobile target: `375 × 812`.
 - CTA size: `144px`
 - CTA text size: `18px`
 
-### 9.5 Home implementation notes
+### Home implementation notes
 
-The tool-generated output uses a full-size image layer. In production, prefer a responsive background strategy:
+Generated design-export output may describe the background as a full-size image layer. In production, prefer a responsive background strategy:
 
 ```css
 .page-shell--home {
@@ -603,7 +624,7 @@ The tool-generated output uses a full-size image layer. In production, prefer a 
 
 Use separate mobile/tablet/desktop assets when available. Background crop is important and should be verified visually at each breakpoint.
 
-### 9.6 Home interactions
+### Home interactions
 
 Explore button:
 
@@ -640,9 +661,9 @@ Recommended interaction CSS:
 
 ---
 
-## 10. Destination template
+## 11. Destination template
 
-### 10.1 Content model
+### Content model
 
 Each destination needs:
 
@@ -653,21 +674,23 @@ interface Destination {
   description: string;
   distance: string;
   travelTime: string;
-  images: {
-    png?: string;
-    webp?: string;
+  image: {
+    src: string;
+    alt: string;
+    width?: number;
+    height?: number;
   };
 }
 ```
 
-The inspected Moon content:
+Reviewed Moon reference content:
 
 - name: `MOON`
 - description: `See our planet as you’ve never seen it before. A perfect relaxing trip away to help regain perspective and come back refreshed. While you’re there, take in some history by visiting the Luna 2 and Apollo 11 landing sites.`
 - average distance: `384,400 km`
 - estimated travel time: `3 days`
 
-### 10.2 Desktop layout
+### Desktop layout
 
 Desktop target: `1440 × 1024`.
 
@@ -718,7 +741,7 @@ Stats:
 - value: Bellefair, `28px`, color white, uppercase
 - label/value gap: `12px`
 
-### 10.3 Tablet layout
+### Tablet layout
 
 The Destination tablet frames follow the same conceptual flow as mobile/desktop but with larger spacing and centered composition.
 
@@ -732,7 +755,7 @@ Recommended behavior:
 - text centered
 - stats can remain two columns if width allows
 
-### 10.4 Mobile layout
+### Mobile layout
 
 Mobile target: `375 × 880`.
 
@@ -758,7 +781,7 @@ Measurements:
 - body: `15px`, line-height `1.8`
 - stats: one column, centered, gap `24px`
 
-### 10.5 Destination accessibility
+### Destination accessibility
 
 If destinations are pages/routes:
 
@@ -777,9 +800,9 @@ Recommended: use routes.
 
 ---
 
-## 11. Crew template
+## 12. Crew template
 
-### 11.1 Content model
+### Content model
 
 Each crew member needs:
 
@@ -789,17 +812,22 @@ interface CrewMember {
   name: string;
   role: string;
   bio: string;
-  image: string;
+  image: {
+    src: string;
+    alt: string;
+    width?: number;
+    height?: number;
+  };
 }
 ```
 
-The inspected Douglas Hurley content:
+Reviewed Douglas Hurley reference content:
 
 - role: `Commander`
 - name: `Douglas Hurley`
 - bio: `Douglas Gerald Hurley is an American engineer, former Marine Corps pilot and former NASA astronaut. He launched into space for the third time as commander of Crew Dragon Demo-2.`
 
-### 11.2 Desktop layout
+### Desktop layout
 
 Desktop target: `1440 × 1024`.
 
@@ -833,11 +861,26 @@ Pagination:
 - inactive dots: white with low opacity
 - pagination appears near the lower part of the left column
 
-### 11.3 Mobile layout
+### Tablet layout
+
+Tablet target: `768 × 1024`.
+
+The Crew tablet layout should bridge the desktop and mobile compositions:
+
+- page title remains visible near the top
+- content is centered horizontally
+- text content remains centered rather than left-aligned
+- dot pagination stays close to the text block
+- portrait remains below or visually subordinate to the text, matching the mobile-first reading order unless a tablet reference confirms a different placement
+- preserve enough vertical spacing so the portrait does not collide with the bio or pagination on shorter tablet-height viewports
+
+Assumption: because the design intent for Crew prioritizes role/name/bio before portrait on smaller screens, tablet should not switch to the desktop two-column composition too early.
+
+### Mobile layout
 
 Mobile target: `375 × 880`.
 
-Flow in inspected reference mockups:
+Flow in the reviewed reference mockups:
 
 1. mobile header
 2. page title
@@ -859,9 +902,9 @@ Measurements:
 
 Important implementation note:
 
-The tool-generated output includes empty paragraphs/zero-width content in the mobile bio. Do not copy that markup. Store and render clean text from data.
+Generated design-export markup may include empty paragraphs or zero-width content in the mobile bio. Do not copy that markup. Store and render clean text from data.
 
-### 11.4 Crew accessibility
+### Crew accessibility
 
 If crew members are pages/routes:
 
@@ -874,9 +917,9 @@ Avoid unlabeled dots.
 
 ---
 
-## 12. Technology template
+## 13. Technology template
 
-### 12.1 Content model
+### Content model
 
 Each technology item needs:
 
@@ -886,19 +929,22 @@ interface TechnologyItem {
   name: string;
   description: string;
   images: {
-    portrait: string;
-    landscape: string;
+    portrait?: string;
+    landscape?: string;
+    alt: string;
   };
 }
+
+At least one technology image is required for content integrity. For production-level visual parity, both portrait and landscape assets are expected because the desktop and mobile compositions use different crops. Missing one orientation must be treated as a visual QA risk, not as a silent fallback.
 ```
 
-The inspected Launch Vehicle content:
+Reviewed Launch Vehicle reference content:
 
 - eyebrow: `THE TERMINOLOGY…`
 - name: `LAUNCH VEHICLE`
 - description: `A launch vehicle or carrier rocket is a rocket-propelled vehicle used to carry a payload from Earth's surface to space, usually to Earth orbit or beyond. Our WEB-X carrier rocket is the most powerful in operation. Standing 150 metres tall, it's quite an awe-inspiring sight on the launch pad!`
 
-### 12.2 Desktop layout
+### Desktop layout
 
 Desktop target: `1440 × 1024`.
 
@@ -937,7 +983,22 @@ Image:
 - positioned on the right
 - should not shrink into a tiny image on intermediate desktop widths
 
-### 12.3 Mobile layout
+### Tablet layout
+
+Tablet target: `768 × 1024`.
+
+The Technology tablet layout should follow the same high-level order as mobile while using larger available width:
+
+- page title remains near the top and centered or aligned according to the tablet reference
+- landscape technology image appears above pagination and text
+- numbered pagination is horizontal
+- text content is centered
+- content width should remain readable and should not stretch the description across the full viewport
+- image crop must be checked separately from desktop because the tablet/mobile crop is not the same as the desktop portrait composition
+
+Assumption: tablet should use the landscape-oriented technology image flow, not the desktop right-side portrait layout, unless a reviewed tablet reference explicitly confirms otherwise.
+
+### Mobile layout
 
 Mobile target: `375 × 880`.
 
@@ -964,7 +1025,7 @@ Important implementation note:
 
 The mobile technology image crop is not a simple proportional resize of the desktop image. The design uses a landscape-oriented crop, internally wider than the mobile frame. Use separate portrait and landscape image assets when available.
 
-### 12.4 Technology accessibility
+### Technology accessibility
 
 If technology items are pages/routes:
 
@@ -975,7 +1036,7 @@ If technology items are pages/routes:
 
 ---
 
-## 13. Background image strategy
+## 14. Background image strategy
 
 Each page family uses its own background imagery:
 
@@ -984,7 +1045,7 @@ Each page family uses its own background imagery:
 - Crew background
 - Technology background
 
-The inspected design uses different crops across mobile, tablet, and desktop. Do not assume one background image with `background-size: cover` will match every frame.
+The reviewed reference mockups use different crops across mobile, tablet, and desktop. Do not assume one background image with `background-size: cover` will match every frame.
 
 Recommended implementation:
 
@@ -1020,7 +1081,7 @@ Use equivalent modifiers for destination, crew, and technology pages.
 
 ---
 
-## 14. Image asset requirements
+## 15. Image asset requirements
 
 Required asset categories:
 
@@ -1081,7 +1142,7 @@ Each technology item should have:
 
 ---
 
-## 15. Component responsibilities
+## 16. Component responsibilities
 
 ### `PageShell.astro`
 
@@ -1168,7 +1229,7 @@ Responsibilities:
 
 ---
 
-## 16. Interaction states
+## 17. Interaction states
 
 ### Primary nav links
 
@@ -1229,7 +1290,7 @@ Respect `prefers-reduced-motion`.
 
 ---
 
-## 17. Accessibility requirements
+## 18. Accessibility requirements
 
 Implementation must include:
 
@@ -1261,31 +1322,37 @@ Recommended pagination labels:
 
 ---
 
-## 18. Known design inconsistencies and decisions needed
+## 19. Known design inconsistencies and decisions needed
 
-### 18.1 Selected source-design identifier is not directly usable
+### Wrapper-level source artifacts are not implementation references
 
-The provided node `62857:72` is a zero-size wrapper. Use its child frames for actual implementation references.
+The provided source may point to a wrapper-level artifact rather than a renderable page frame. Use the actual page frames, reference mockups, or approved visual exports for implementation decisions.
 
-### 18.2 Empty footer frame
+### Mobile navigation open state is visually unspecified
 
-`62913:2138` is named `Design System - Footer`, but it contains no children. There is no footer design to implement from the inspected file.
+The reference mockups define the closed hamburger state but do not define the open mobile menu panel. The product still needs functional mobile navigation.
+
+Decision needed: confirm the open menu pattern. Until confirmed, implement the smallest accessible inferred state and document it in review notes.
+
+### Empty footer placeholder
+
+The source design artifacts include an empty footer placeholder, but there is no approved footer design to implement from the reviewed references.
 
 Decision: omit the footer unless another design is provided.
 
-### 18.3 Style guide naming appears inconsistent
+### Style guide naming appears inconsistent
 
 The Style Guide contains frames named `Colors` that include typography labels and repeated color labels. Use extracted variables and page frames as the implementation source of truth.
 
-### 18.4 Tablet navigation number inconsistency
+### Tablet navigation number inconsistency
 
 Home tablet appears to omit `00` for the active Home link while keeping numbers for other nav items.
 
 Recommended decision: make nav numbering consistent across tablet links unless the design owner confirms this is intentional.
 
-### 18.5 tool-generated markup is not production-ready
+### Generated design-export markup is not production-ready
 
-The generated code uses React + Tailwind-like utility classes and sometimes chooses `<button>` for active links. It should not be copied directly.
+Generated design-export markup can use framework-specific utility classes and sometimes chooses `<button>` for active links. It should not be copied directly.
 
 Production rules:
 
@@ -1296,7 +1363,7 @@ Production rules:
 
 ---
 
-## 19. Implementation risks
+## 20. Implementation risks
 
 ### Risk: image crop mismatch
 
@@ -1310,35 +1377,44 @@ The source design artifacts use fixed frame heights. Browsers have dynamic viewp
 
 The tablet nav uses a dense horizontal layout. If labels overflow at intermediate widths, either hide nav indexes consistently or reduce spacing carefully.
 
+### Risk: mobile navigation inferred state
+
+The source references do not define the open mobile menu. A functional inferred menu is necessary for mobile navigation, but it should be reviewed visually before being treated as final.
+
 ### Risk: technology image implementation
 
 The technology page has the most complex responsive shift. Desktop uses a portrait/right image; mobile uses a landscape image above the text. This should be implemented with `<picture>` or data-provided portrait/landscape assets.
 
-### Risk: copying generated design-tool code
+### Risk: copying generated design-export code
 
-The generated output is useful for measurements, but it is not suitable as final Astro code. It includes implementation noise, artifact class names, and non-semantic element choices.
+Generated design-export output is useful for measurements, but it is not suitable as final Astro code. It can include implementation noise, artifact class names, and non-semantic element choices.
 
 ---
 
-## 20. Acceptance criteria
+## 21. Acceptance criteria
 
 The implementation is successful when:
 
-- Home, Destination, Crew, and Technology templates match the inspected layouts at mobile, tablet, and desktop sizes.
-- Navigation is shared and correctly highlights the current section.
+- Home, Destination, Crew, and Technology templates match the reviewed reference layouts at the 375px, 768px, and 1440px visual targets.
+- Layouts remain usable at intermediate widths without horizontal scrolling.
+- Navigation is shared, functional on mobile, and correctly highlights the current section.
+- Main navigation uses links for route navigation and does not change element type between active and inactive states.
 - Destination, Crew, and Technology pages are data-driven rather than duplicated by hand.
 - Typography uses Bellefair, Barlow, and Barlow Condensed with the specified hierarchy.
 - Colors and spacing come from global tokens.
-- Background images use breakpoint-specific crops.
-- All interactive controls are keyboard accessible.
-- Active sub-navigation controls are announced with `aria-current`.
-- Mobile menu button is accessible and not a decorative-only icon.
-- No Tailwind dependency is added solely because the design tool generated Tailwind-like classes.
+- Background and content images use breakpoint-appropriate crops or explicitly documented fallbacks.
+- All interactive controls are keyboard accessible and have visible focus states against the dark background.
+- Active sub-navigation controls are announced with `aria-current` for route-based navigation.
+- Mobile menu button is a real control; when the menu is available, it exposes state with `aria-expanded` and supports close behavior.
+- Dot and numbered pagination controls have accessible labels and touch targets larger than their visual size when needed.
+- Decorative images are hidden from assistive technologies and content images have meaningful alt text.
+- Reduced-motion preferences are respected for hover/focus transitions.
+- No Tailwind dependency is added solely because generated design-export markup used utility-like classes.
 - No footer is implemented unless a footer design is provided.
 
 ---
 
-## 21. Suggested implementation order
+## 22. Suggested implementation order
 
 1. Create global tokens: colors, spacing, fonts, typography helpers.
 2. Add static assets and verify background image availability.
@@ -1355,7 +1431,7 @@ The implementation is successful when:
 
 ---
 
-## 22. Visual QA checklist
+## 23. Visual QA checklist
 
 Check these viewport widths:
 
@@ -1381,7 +1457,7 @@ For each page family verify:
 
 ---
 
-## 23. Summary
+## 24. Summary
 
 The source design artifacts should be implemented as a small design system plus four page templates:
 
@@ -1390,4 +1466,4 @@ The source design artifacts should be implemented as a small design system plus 
 - Crew detail
 - Technology detail
 
-The strongest design constraints are typography, background cropping, spacing rhythm, and responsive composition. The implementation should prioritize semantic Astro components, data-driven routes, global CSS tokens, and accessible navigation patterns rather than reproducing the design tool's generated React/Tailwind structure.
+The strongest design constraints are typography, background cropping, spacing rhythm, and responsive composition. The implementation should prioritize semantic Astro components, data-driven routes, global CSS tokens, and accessible navigation patterns rather than reproducing generated design-export structure.
